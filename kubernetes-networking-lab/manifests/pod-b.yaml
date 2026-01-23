@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-b
+  labels:
+    app: pod-b
+spec:
+  containers:
+  - name: busybox
+    image: busybox:1.36
+    imagePullPolicy: IfNotPresent
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /www
+        echo "Hello from pod-b" > /www/index.html
+        busybox httpd -f -p 80 -h /www
+
