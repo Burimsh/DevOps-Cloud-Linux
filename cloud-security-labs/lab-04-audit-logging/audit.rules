@@ -1,0 +1,14 @@
+# Monitor all sudo commands
+-w /etc/sudoers -p wa -k sudo_changes
+-w /etc/sudoers.d/ -p wa -k sudo_changes
+
+# Monitor authentication logs
+-w /var/log/auth.log -p wa -k authlog
+
+# Monitor SSH login attempts
+-w /var/log/secure -p wa -k sshlog
+
+# Monitor user additions/deletions
+-w /etc/passwd -p wa -k user_changes
+-w /etc/group -p wa -k group_changes
+-w /etc/shadow -p wa -k shadow_changes
