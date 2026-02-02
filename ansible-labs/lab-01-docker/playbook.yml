@@ -1,0 +1,86 @@
+---
+- name: Lab 01 - Install Docker using Ansible
+  hosts: local_vms
+  become: true
+
+  tasks:
+    - name: Remove old Docker repository files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/docker.list
+        - /etc/apt/sources.list.d/docker-ce.list
+
+    - name: Remove old Docker GPG keys
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/keyrings/docker.gpg
+        - /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Update apt cache (clean state)
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisite packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Create keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key (ASCII)
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /tmp/docker.gpg
+        mode: '0644'
+
+    - name: Convert Docker GPG key to keyring format
+      command: >
+        gpg --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker repository (signed-by)
+      apt_repository:
+        repo: >
+          deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/ubuntu
+          {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+
+    - name: Update apt cache after adding Docker repo
+      apt:
+        update_cache: yes
+
+    - name: Install Docker Engine
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Enable and start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add cloudadmin user to docker group
+      user:
+        name: cloudadmin
+        groups: docker
+        append: yes
+
