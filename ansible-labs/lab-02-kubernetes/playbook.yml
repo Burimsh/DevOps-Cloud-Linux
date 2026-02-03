@@ -1,0 +1,6 @@
+- name: Lab 02 - Single Node Kubernetes (k3s)
+  hosts: k3s
+  become: true
+  roles:
+    - common
+    - k3s-single
