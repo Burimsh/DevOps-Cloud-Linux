@@ -1,0 +1,2 @@
+ENV=dev
+VETH_SUBNET=10.0.1.0/24
