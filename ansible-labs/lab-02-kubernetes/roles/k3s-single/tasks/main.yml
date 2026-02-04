@@ -1,0 +1,28 @@
+- name: Install k3s (single node)
+  shell: |
+    curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for k3s kubeconfig to exist
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 60
+
+- name: Create .kube directory for cloudadmin
+  file:
+    path: /home/cloudadmin/.kube
+    state: directory
+    owner: cloudadmin
+    group: cloudadmin
+    mode: '0755'
+
+- name: Copy kubeconfig for cloudadmin
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/cloudadmin/.kube/config
+    remote_src: yes
+    owner: cloudadmin
+    group: cloudadmin
+    mode: '0644'
+

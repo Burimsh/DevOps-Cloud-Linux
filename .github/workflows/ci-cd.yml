@@ -1,0 +1,53 @@
+name: Infra Tooling CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Security Scan (ShellCheck)
+        run: shellcheck scripts/*.sh tests/*.sh rollback.sh
+
+      - name: Run Tests
+        run: bash tests/connectivity_test.sh
+
+  deploy-dev:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to DEV
+        run: bash scripts/deploy.sh environments/dev.env
+
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to PROD
+        run: bash scripts/deploy.sh environments/prod.env
+
+  release:
+    needs: deploy-prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Version
+        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - name: Tag Release
+        run: |
+          git tag v${VERSION}
+          git push origin v${VERSION}
