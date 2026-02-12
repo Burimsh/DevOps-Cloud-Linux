@@ -1,0 +1,5 @@
+"VMName","ResourceGroup","Location","PowerState","MissingTags"
+"vm-dev-01","rg-dev","westeurope","VM running",""
+"vm-dev-02","rg-dev","westeurope","VM stopped",""
+"vm-prod-01","rg-prod","westeurope","VM running",""
+"vm-prod-02","rg-prod","westeurope","VM stopped","Owner, Environment"
